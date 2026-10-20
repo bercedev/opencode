@@ -39,15 +39,20 @@ export function DialogMessage(props: {
           description: "undo messages and file changes",
           onSelect: (dialog) => {
             const value = message()
-            if (value?.type === "user") {
-              props.setPrompt?.({
-                ...projectedPromptInput(value),
-                pasted: [],
-              })
-            }
-            void client.api.session.revert
-              .stage({ sessionID: props.sessionID, messageID: props.messageID })
-              .catch((error) => toast.show({ message: errorMessage(error), variant: "error", duration: 5000 }))
+            const { sessionID, messageID, setPrompt } = props
+            // Same order as /undo: stop a running turn before staging the revert,
+            // and only put the message back in the prompt once the revert is in.
+            void (async () => {
+              await client.api.session.interrupt({ sessionID })
+              await client.api.session.wait({ sessionID })
+              await client.api.session.revert.stage({ sessionID, messageID })
+              if (value?.type === "user") {
+                setPrompt?.({
+                  ...projectedPromptInput(value),
+                  pasted: [],
+                })
+              }
+            })().catch((error) => toast.show({ message: errorMessage(error), variant: "error", duration: 5000 }))
             dialog.clear()
           },
         },
