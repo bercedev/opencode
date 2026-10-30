@@ -38,8 +38,8 @@ export function DialogStash(props: { onSelect: (entry: StashEntry) => void }) {
     const entries = stash.list()
     // Show most recent first
     return entries
-      .map((entry, index) => {
-        const isDeleting = toDelete() === index
+      .map((entry) => {
+        const isDeleting = toDelete() === entry.timestamp
         const lineCount = (entry.prompt.text.match(/\n/g)?.length ?? 0) + 1
         return {
           title: isDeleting
@@ -47,7 +47,7 @@ export function DialogStash(props: { onSelect: (entry: StashEntry) => void }) {
             : getStashPreview(entry.prompt.text),
           bg: isDeleting ? theme.background.action.destructive.focused : undefined,
           fg: isDeleting ? theme.text.action.destructive.focused : undefined,
-          value: index,
+          value: entry,
           description: getRelativeTime(entry.timestamp),
           footer: lineCount > 1 ? `~${lineCount} lines` : undefined,
         }
@@ -63,12 +63,8 @@ export function DialogStash(props: { onSelect: (entry: StashEntry) => void }) {
         setToDelete(undefined)
       }}
       onSelect={(option) => {
-        const entries = stash.list()
-        const entry = entries[option.value]
-        if (entry) {
-          stash.remove(option.value)
-          props.onSelect(entry)
-        }
+        stash.remove(option.value)
+        props.onSelect(option.value)
         dialog.clear()
       }}
       actions={[
@@ -76,12 +72,12 @@ export function DialogStash(props: { onSelect: (entry: StashEntry) => void }) {
           command: "stash.delete",
           title: "delete",
           onTrigger: (option) => {
-            if (toDelete() === option.value) {
+            if (toDelete() === option.value.timestamp) {
               stash.remove(option.value)
               setToDelete(undefined)
               return
             }
-            setToDelete(option.value)
+            setToDelete(option.value.timestamp)
           },
         },
       ]}
