@@ -119,6 +119,7 @@ describe("callable namespaces", () => {
     const diagnostic = await failure(nested, `return await tools.issues({})`)
     expect(diagnostic.kind).toBe("UnknownTool")
     expect(diagnostic.message).toContain("Tool 'issues' is not callable")
+    expect(diagnostic.suggestions).toEqual(["Use search to resolve the exact call expression. A namespace is not a tool."])
   })
 })
 

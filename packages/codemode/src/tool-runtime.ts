@@ -352,7 +352,9 @@ const resolve = <R>(root: ToolNode<R>, path: ReadonlyArray<string>, index: Reado
     )
   }
   if (node.tool === undefined) {
-    throw new ToolRuntimeError("UnknownTool", `Tool '${segments.join(".")}' is not callable.`)
+    throw new ToolRuntimeError("UnknownTool", `Tool '${segments.join(".")}' is not callable.`, [
+      "Use search to resolve the exact call expression. A namespace is not a tool.",
+    ])
   }
   return node.tool
 }
